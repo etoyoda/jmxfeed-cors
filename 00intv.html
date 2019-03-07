@@ -1,0 +1,44 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>setInterval example</title>
+<script type="text/javascript">
+function getstate() {
+  var state = document.getElementById('state');
+  return parseInt(state.innerText);
+}
+function setstate(s) {
+  var state = document.getElementById('state');
+  state.innerText = s;
+}
+function update() {
+  var s = getstate();
+  s++;
+  var ul = document.getElementById('ul');
+  var li = document.createElement('li');
+  li.innerText = "text step " + s;
+  ul.insertBefore(li, ul.firstChild);
+  ul.removeChild(ul.lastChild);
+  setstate(s);
+}
+function init() {
+  var ul = document.getElementById('ul');
+  for (var i = 0; i < 10; i++) {
+    var li = document.createElement('li');
+    li.innerText = "text step " + i;
+    ul.appendChild(li);
+    setstate(i);
+  }
+  window.setInterval(update, 333);
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</head>
+<body>
+<h1>setInterval example</h1>
+<div id="main">
+<p>state=<span id="state">0</span></p>
+<ul id="ul">
+</ul>
+</div>
+</body></html>

@@ -1,0 +1,56 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>setInterval example</title>
+<script type="text/javascript">
+function rotate() {
+  var ul = document.getElementById('ul');
+  if (ul.lastChild) {
+    var tos = ul.removeChild(ul.lastChild);
+    ul.insertBefore(tos, ul.firstChild);
+  }
+}
+function rssdisp() {
+  xhr.response.querySelectorAll('entry').forEach(function(entry) {
+    var ul = document.getElementById('ul');
+    var tr = document.createElement('tr');
+    tr.setAttribute('id', entry.querySelector('id').textContent);
+    var td1 = document.createElement('td');
+    td1.innerText = entry.querySelector('title').textContent;
+    tr.appendChild(td1);
+    var td2 = document.createElement('td');
+    td2.innerText = entry.querySelector('author').textContent;
+    tr.appendChild(td2);
+    var td3 = document.createElement('td');
+    td3.innerText = entry.querySelector('updated').textContent;
+    tr.appendChild(td3);
+    var td4 = document.createElement('td');
+    td4.innerText = entry.querySelector('content').textContent;
+    tr.appendChild(td4);
+    ul.appendChild(tr);
+  });
+}
+function rssupd() {
+  var urirss = 'https://www.data.jma.go.jp/developer/xml/feed/extra.xml';
+  xhr.open('GET', urirss);
+  xhr.responseType = 'document';
+  xhr.addEventListener("load", rssdisp);
+  xhr.send(null);
+}
+var xhr = new XMLHttpRequest();
+function init() {
+  window.setInterval(rotate, 800);
+  //window.setInterval(rssupd, 60000);
+  rssupd();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</head>
+<body>
+<h1>setInterval example</h1>
+<div id="main">
+<table>
+<tbody id="ul" />
+</table>
+</div>
+</body></html>

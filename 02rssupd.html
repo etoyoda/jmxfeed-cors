@@ -1,0 +1,129 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>setInterval example</title>
+<style type="text/css">
+tr.main {
+  color: black;
+}
+tr.fresh {
+  color: red;
+}
+</style>
+<script type="text/javascript">
+function rotate() {
+  var ul = document.getElementById('ul');
+  if (ul.lastChild) {
+    var tos = ul.removeChild(ul.lastChild);
+    ul.insertBefore(tos, ul.firstChild);
+  }
+}
+function appendrow(ul, entry, id) {
+    var tr = document.createElement('tr');
+    tr.setAttribute('id', id);
+    tr.setAttribute('class', 'fresh');
+    var td1 = document.createElement('td');
+    td1.innerText = entry.querySelector('title').textContent;
+    tr.appendChild(td1);
+    var td2 = document.createElement('td');
+    td2.innerText = entry.querySelector('author').textContent;
+    tr.appendChild(td2);
+    var td3 = document.createElement('td');
+    td3.innerText = entry.querySelector('updated').textContent;
+    tr.appendChild(td3);
+    var td4 = document.createElement('td');
+    td4.innerText = entry.querySelector('content').textContent;
+    tr.appendChild(td4);
+    ul.appendChild(tr);
+}
+function rssdisp() {
+  var stat = {stale:0, live:0, fresh:0};
+  var stale = {};
+  var ul = document.getElementById('ul');
+  var rows = ul.querySelectorAll('tr');
+  Array.prototype.forEach.call(rows, function(entry) {
+    stale[entry.id] = true;
+  });
+  var ents = xhr.response.querySelectorAll('entry');
+  Array.prototype.forEach.call(ents, function(entry) {
+    var id = entry.querySelector('id').textContent;
+    if (stale[id]) {
+      stale[id] = false;
+      //console.log('#dup ' + id);
+      var tr = document.getElementById(id);
+      tr.setAttribute('class', 'main');
+      stat.live++;
+    } else {
+      console.log('#add ' + id);
+      appendrow(ul, entry, id);
+      stat.fresh++;
+    }
+  });
+  for (id in stale) {
+    if (stale[id]) {
+      var tr = document.getElementById(id);
+      console.log('#del ' + id);
+      ul.removeChild(tr);
+      stat.stale++;
+    }
+  }
+  var status = document.getElementById('status');
+  var lmt = xhr.getResponseHeader('last-modified');
+  status.innerText = ['update:', lmt, '; fresh:', stat.fresh, '; live:', stat.live, '; removed:', stat.stale].join('');
+}
+function clear() {
+  var ul = document.getElementById('ul');
+  var rows = ul.querySelectorAll('tr');
+  Array.prototype.forEach.call(rows, function(entry) {
+    entry.setAttribute('class', 'main');
+  });
+}
+
+function rssupd() {
+  var urirss = 'https://www.data.jma.go.jp/developer/xml/feed/extra.xml';
+  xhr.open('GET', urirss);
+  xhr.responseType = 'document';
+  xhr.addEventListener("load", rssdisp);
+  xhr.send(null);
+  var debug1 = document.getElementById('debug1');
+  debug1.addEventListener("click", function() {
+    var ul = document.getElementById('ul');
+    if (ul.lastChild) {
+      var killed = ul.removeChild(ul.lastChild);
+      console.log('#debug kill ' + killed.id);
+    }
+  });
+  var debug2 = document.getElementById('debug2');
+  debug2.addEventListener("click", function() {
+    var ul = document.getElementById('ul');
+    if (ul.lastChild) {
+      var tr = document.createElement('tr')
+      tr.setAttribute('id', 'dummy');
+      tr.innerText = 'dummy';
+      ul.appendChild(tr);
+      console.log('#debug add dummy');
+    }
+  });
+}
+var xhr = new XMLHttpRequest();
+function init() {
+  window.setInterval(rotate, 1500);
+  window.setInterval(rssupd, 30000);
+  window.setTimeout(clear, 3000);
+  rssupd();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</head>
+<body>
+<h1>setInterval example</h1>
+<div id="main">
+<p>status=<span id="status">0</span>
+<input type="button" id="debug1" value="debug kill" />
+<input type="button" id="debug2" value="debug add" />
+</p>
+<table>
+<tbody id="ul" />
+</table>
+</div>
+</body></html>

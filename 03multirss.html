@@ -1,0 +1,140 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>latest JMA XML messages</title>
+<script type="text/javascript">
+function rotate() {
+  var ul = document.getElementById('ul');
+  if (ul.lastChild) {
+    var tos = ul.removeChild(ul.lastChild);
+    ul.insertBefore(tos, ul.firstChild);
+  }
+}
+function appendrow(ul, entry, id) {
+    var tr = document.createElement('tr');
+    tr.setAttribute('id', id);
+    var td1 = document.createElement('td');
+    td1.innerText = entry.querySelector('title').textContent;
+    tr.appendChild(td1);
+    var td2 = document.createElement('td');
+    td2.innerText = entry.querySelector('author').textContent;
+    tr.appendChild(td2);
+    var td3 = document.createElement('td');
+    var supd = entry.querySelector('updated').textContent;
+    var tupd = new Date(Date.parse(supd));
+    td3.innerText = tupd.toISOString().substring(0,16);
+    tr.setAttribute('data-upd', tupd.toISOString());
+    tr.appendChild(td3);
+    var td4 = document.createElement('td');
+    var a = document.createElement('a');
+    var uuid = id.substring(9);
+    var href = 'https://www.data.jma.go.jp/developer/xml/data/' + uuid + '.xml';
+    a.setAttribute('href', href);
+    a.innerText = entry.querySelector('content').textContent;
+    td4.appendChild(a);
+    tr.appendChild(td4);
+    ul.appendChild(tr);
+    return tr;
+}
+
+keep = {};
+
+function rssdisp_r() { rssdisp('regular') }
+function rssdisp_e() { rssdisp('extra') }
+function rssdisp_q() { rssdisp('eqvol') }
+function rssdisp_o() { rssdisp('other') }
+
+function rssdisp(kind) {
+  var stat = {stale:0, dup:0, fresh:0};
+  var ul = document.getElementById('ul');
+  var rows = ul.querySelectorAll('tr');
+  Array.prototype.forEach.call(rows, function(entry) {
+    if (keep[entry.id] == kind) {
+      keep[entry.id] = null;
+    }
+  });
+  rows = null;
+  var ents = xhr.response.querySelectorAll('entry');
+  Array.prototype.forEach.call(ents, function(entry) {
+    var id = entry.querySelector('id').textContent;
+    if (keep[id]) {
+      //console.log('#dup ' + id);
+      stat.dup++;
+    } else {
+      //console.log('#add ' + id);
+      stat.fresh++;
+      appendrow(ul, entry, id);
+      keep[id] = kind;
+    }
+  });
+  ents = null;
+  var lmt = xhr.getResponseHeader('last-modified');
+  var tcut = (new Date(Date.parse(lmt) - 13600000)).toISOString();
+  var ul = document.getElementById('ul');
+  for (var id in keep) {
+    var entry = document.getElementById(id);
+    var t = entry.getAttribute('data-upd');
+    if ((keep[entry.id] != kind) && (t < tcut)) {
+      console.log('#del ' + entry.textContent);
+      ul.removeChild(entry);
+      stat.stale++;
+      delete keep[entry.id];
+    }
+  }
+  var status = document.getElementById('status');
+  status.innerText = ['kind:',kind,'; tcut:', tcut, '; fresh:', stat.fresh, '; dup:', stat.dup, '; removed:', stat.stale].join('');
+  console.log(status.innerText);
+}
+function rssupd_r() { rssupd('https://www.data.jma.go.jp/developer/xml/feed/regular.xml', rssdisp_r); }
+function rssupd_e() { rssupd('https://www.data.jma.go.jp/developer/xml/feed/extra.xml', rssdisp_e); }
+function rssupd_q() { rssupd('https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml', rssdisp_q); }
+function rssupd_o() { rssupd('https://www.data.jma.go.jp/developer/xml/feed/other.xml', rssdisp_o); }
+function rssupd(urirss, lhandler) {
+  xhr.open('GET', urirss);
+  xhr.responseType = 'document';
+  xhr.addEventListener("load", lhandler);
+  xhr.send(null);
+  var debug1 = document.getElementById('debug1');
+  debug1.addEventListener("click", function() {
+    var ul = document.getElementById('ul');
+    if (ul.lastChild) {
+      var killed = ul.removeChild(ul.lastChild);
+      console.log('#debug kill ' + killed.id);
+    }
+  });
+  var debug2 = document.getElementById('debug2');
+  debug2.addEventListener("click", function() {
+    var ul = document.getElementById('ul');
+    if (ul.lastChild) {
+      var tr = document.createElement('tr')
+      tr.setAttribute('id', 'dummy');
+      tr.innerText = 'dummy';
+      ul.appendChild(tr);
+      console.log('#debug add dummy');
+    }
+  });
+}
+var xhr = new XMLHttpRequest();
+function init() {
+  window.setInterval(rotate, 811);
+  window.setInterval(rssupd_r, 7100);
+  window.setInterval(rssupd_e, 7300);
+  window.setInterval(rssupd_q, 7900);
+  window.setInterval(rssupd_o, 8300);
+  rssupd_e();
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</head>
+<body>
+<h1>latest JMA XML messages</h1>
+<div id="main">
+<table>
+<tbody id="ul" />
+</table>
+</div>
+<p>status=<span id="status">0</span>
+<input type="button" id="debug1" value="debug kill" />
+<input type="button" id="debug2" value="debug add" />
+</p>
+</body></html>
