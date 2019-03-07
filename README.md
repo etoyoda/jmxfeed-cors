@@ -17,7 +17,12 @@ CORSヘッダとは何か、については [MDN](https://developer.mozilla.org/
 
 [00intv.html](00intv.html) - 単に setInterval タイマーのテストです。JMX Atom フィードを読みません。
 
-[01rss.html](01rss.html) - 一度だけ JMX Atom フィード（extra.xsl）を読み込み、表示順をローテイションにしてみたらしい。
+[01rss.html](01rss.html) - 一度だけ JMX Atom フィード（extra.xsl）を読み込み、表示順をローテーションする。
+[デモサイト](https://www.toyoda-eizi.net/2019/jmxfeed-cors/01rss.html)
 
-[02rssupd.html](02rssupd.html) - JMX Atom フィードを定期的に読み込み表示するテスト。
+[02rssupd.html](02rssupd.html) - JMX Atom フィードを定期的に読み込み表示を更新する。
 [デモサイト](https://www.toyoda-eizi.net/2019/jmxfeed-cors/02rssupd.html)
+
+[03multirss.html](03multirss.html) - JMX Atom フィードを全部定期的に表示を更新する。
+[デモサイト](https://www.toyoda-eizi.net/2019/jmxfeed-cors/03multirss.html)
+
